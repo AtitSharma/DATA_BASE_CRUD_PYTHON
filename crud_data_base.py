@@ -39,11 +39,21 @@ class Main:
         conn.commit()
         
     
-    def insert(self,**data):
+    def insert(self):
+        table_name=self.__class__.__name__.lower()
+        id=f"'{self.id}'"
+        query_to_search_id='SELECT COUNT(*) FROM {0} WHERE id={1};'.format(table_name,id)
+        cur.execute(query_to_search_id)
+        conn.commit()
+        result=cur.fetchall()
+        if result[0][0] > 0:
+            print("Id must be unique")
+            return
+        
         datas=self.__dict__.values()
         my_datas_values=[str(i) for i in datas]
         my_datas_keys=[str(i) for i in self.__dict__.keys()]
-        table_name=self.__class__.__name__.lower()
+        
         keys_string=''
         for i in my_datas_keys:
             keys_string+=i
@@ -61,9 +71,31 @@ class Main:
         cur.execute(insert_script)
         conn.commit()
     
-    def update(self,**newdata):
+    def update(self,*newdata):
         
-        pass
+        id=str(newdata[0])
+        table_name=self.__class__.__name__.lower()
+        if id!=str(self.id):
+            print("Cannot Update others data")
+            return 
+        if len(self.__dict__)!=len(newdata):
+            print("You provide some more fields")
+            return
+        id=f"'{self.id}'"
+        keys_list=[str(i) for i in  self.__dict__.keys()]
+        print(keys_list)
+        print(newdata)
+        new_string=''
+        for i in range(len(keys_list)):
+            new_string+= f"{keys_list[i]}='{newdata[i]}'"
+            new_string+=","
+        update_query="UPDATE {0} SET {1} WHERE id={2};".format(table_name,new_string[:-1],id)
+        cur.execute(update_query)
+        conn.commit()
+        
+        
+    
+    
     
     def delete(self):
         values=self.__dict__
@@ -97,10 +129,10 @@ class Student(Main):
         self.grade=grade
         
 s=Student(2,"StitSharma",15)
-s.create_table()
+# s.create_table()
 # s.insert()
-# 
-s.delete()
+# s.delete()
+s.update(2,"AtitSharma",30)
 
 
 if cur is not None:
