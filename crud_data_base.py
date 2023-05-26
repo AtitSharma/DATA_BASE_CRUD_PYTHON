@@ -1,8 +1,4 @@
 import psycopg2
-
-import psycopg2
-
-
 hostname='localhost'
 database='demo'
 username='atitsharma'
@@ -43,8 +39,7 @@ class Main:
         conn.commit()
         
     
-    def save(self,**data):
-        print(self.__dict__)
+    def insert(self,**data):
         datas=self.__dict__.values()
         my_datas_values=[str(i) for i in datas]
         my_datas_keys=[str(i) for i in self.__dict__.keys()]
@@ -57,7 +52,6 @@ class Main:
         for j in my_datas_values:
             values_string+=f"'{j}'"
             values_string+=","
-        print(my_datas_values)
         try:     
             insert_script='INSERT INTO {0}({1}) VALUES({2});'.format(table_name,keys_string[:-1],values_string[:-1])
         except Exception as e:
@@ -72,7 +66,13 @@ class Main:
         pass
     
     def delete(self):
-        pass
+        values=self.__dict__
+        id=values.get('id')
+        table_name=self.__class__.__name__.lower()
+        id=f"'{id}'"
+        delete_script='DELETE FROM {0} WHERE id={1};'.format(table_name,id)
+        cur.execute(delete_script)
+        conn.commit()
     
     
     @classmethod
@@ -97,12 +97,10 @@ class Student(Main):
         self.grade=grade
         
 s=Student(2,"StitSharma",15)
-# s.create_table()
-# s.save()
-        
-s.drop_table()
-
-Student.drop_table()
+s.create_table()
+# s.insert()
+# 
+s.delete()
 
 
 if cur is not None:
